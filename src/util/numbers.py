@@ -1,6 +1,16 @@
 class Numbers:
 
     @staticmethod
+    def non_zero(n):
+        if n == 0:
+            return 0
+        i = 1
+        for c in reversed(str(n)):
+            if c != "0":
+                return i
+            i += 1
+
+    @staticmethod
     def skew_binary(n):
         if n < 0:
             raise ValueError(
