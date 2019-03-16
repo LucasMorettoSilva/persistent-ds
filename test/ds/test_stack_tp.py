@@ -10,6 +10,33 @@ class TestStackTP(unittest.TestCase):
         self.assertEqual(0, s.size())
         self.assertIsNone(s.top())
 
+    def test_push_withEmptyStackAndNoneArgument_shouldRaiseValueError(self):
+        s = StackTP()
+        with self.assertRaises(ValueError):
+            s.push(None)
+
+    def test_push_withDifferentVersionsAndNoneArgument_shouldRaiseValueError(self):
+        s = StackTP()
+        for i in range(1, 20):
+            s.push(i)
+
+        for i in range(0, 20):
+            with self.assertRaises(ValueError):
+                s.push(None, i)
+
+    def test_push_withInvalidVersionNumber_shouldRaiseValueError(self):
+        s = StackTP()
+        for i in range(1, 20):
+            s.push(i)
+
+        for i in range(-20, 0):
+            with self.assertRaises(ValueError):
+                s.push(1, i)
+
+        for i in range(20, 40):
+            with self.assertRaises(ValueError):
+                s.push(1, i)
+
     def test_push_withCurrentVersion_shouldInsertElementInTheCurrentStackVersion(self):
         # Should behave as ephemeral stack
         s = StackTP()
@@ -39,6 +66,19 @@ class TestStackTP(unittest.TestCase):
             # Version i = [i, ..., 1]
             s.push(0, i)
             self.assertEqual(i + 1, s.size())
+
+    def test_top_withInvalidVersionNumber_shouldRaiseValueError(self):
+        s = StackTP()
+        for i in range(1, 20):
+            s.push(i)
+
+        for i in range(-20, 0):
+            with self.assertRaises(ValueError):
+                s.top(i)
+
+        for i in range(20, 40):
+            with self.assertRaises(ValueError):
+                s.top(i)
 
     def test_top_withCurrentVersion_shouldReturnTopElementOfCurrentStackVersion(self):
         # Should behave as ephemeral stack
@@ -74,6 +114,19 @@ class TestStackTP(unittest.TestCase):
             self.assertEqual(i + 1, s.size())
             self.assertEqual(0, s.top())
 
+    def test_pop_withInvalidVersionNumber_shouldRaiseValueError(self):
+        s = StackTP()
+        for i in range(1, 20):
+            s.push(i)
+
+        for i in range(-20, 0):
+            with self.assertRaises(ValueError):
+                s.pop(i)
+
+        for i in range(20, 40):
+            with self.assertRaises(ValueError):
+                s.pop(i)
+
     def test_pop_withCurrentVersion_shouldRemoveAndReturnTopStackElementOfCurrentVersion(self):
         # Should behave as ephemeral stack
         s = StackTP()
@@ -99,6 +152,19 @@ class TestStackTP(unittest.TestCase):
         for i in range(1, 20):
             # Version i = [i, ..., 1]
             self.assertEqual(i, s.pop(i))
+
+    def test_kth_withInvalidVersionNumber_shouldRaiseValueError(self):
+        s = StackTP()
+        for i in range(1, 20):
+            s.push(i)
+
+        for i in range(-20, 0):
+            with self.assertRaises(ValueError):
+                s.kth(1, i)
+
+        for i in range(20, 40):
+            with self.assertRaises(ValueError):
+                s.kth(1, i)
 
     def test_kth_withEmptyStackVersion_shouldRaiseIndexError(self):
         s = StackTP()
@@ -130,6 +196,7 @@ class TestStackTP(unittest.TestCase):
                     s.kth(j, i)
 
     def test_kth_withCurrentVersionAndValidIndex_shouldReturnStackElementAtGivenIndex(self):
+        # Should behave as ephemeral stack
         s = StackTP()
         for i in range(1, 20):
             s.push(i)
@@ -147,5 +214,34 @@ class TestStackTP(unittest.TestCase):
             for j in range(1, i):
                 self.assertEqual(j, s.kth(j, i))
 
+    def test_size_withInvalidVersionNumber_shouldRaiseValueError(self):
+        s = StackTP()
+        for i in range(-20, 0):
+            with self.assertRaises(ValueError):
+                s.size(i)
+        for i in range(1, 20):
+            with self.assertRaises(ValueError):
+                s.size(i)
 
+    def test_size_withEmptyStack_shouldReturnZero(self):
+        s = StackTP()
+        self.assertEqual(0, s.size())
 
+    def test_size_withCurrentVersionAndSequencesOfInsertAndDelete_shouldReturnCorrectSize(self):
+        # Should behave as ephemeral stack
+        s = StackTP()
+        for i in range(1, 20):
+            s.push(i)
+            self.assertEqual(i, s.size())
+
+        for i in range(19, 0, -1):
+            s.pop()
+            self.assertEqual(i - 1, s.size())
+
+    def test_size_withDifferentVersions_shouldReturnCorrectSizeAtGivenVersion(self):
+        s = StackTP()
+        for i in range(1, 20):
+            s.push(i)
+
+        for i in range(0, 20):
+            self.assertEqual(i, s.size(i))

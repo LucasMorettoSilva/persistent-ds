@@ -62,6 +62,8 @@ class StackTP:
             u.jump = v
 
     def kth(self, k, version=None):
+        self.__check_version(version)
+
         if k <= 0:
             raise IndexError("K is out of bounds for given version")
 
@@ -76,16 +78,22 @@ class StackTP:
         ).node.val
 
     def size(self, version=None):
+        self.__check_version(version)
+
         if version is None:
             return self.__version[-1].size
         return self.__version[version].size
 
     def top(self, version=None):
+        self.__check_version(version)
+
         if version is None:
             return self.__version[-1].val
         return self.__version[version].val
 
     def pop(self, version=None):
+        self.__check_version(version)
+
         if version is None:
             version = len(self.__version) - 1
         if self.__version[version].val is None:
@@ -94,6 +102,10 @@ class StackTP:
         return self.__version[version].val
 
     def push(self, val, version=None):
+        if val is None:
+            raise ValueError("Invalid argument 'val' of None Type")
+        self.__check_version(version)
+
         if version is None:
             version = len(self.__version) - 1
         next = self.__version[version]
@@ -104,5 +116,9 @@ class StackTP:
         self.__version.append(node)
         # self.__add_leaf(leaf)
 
+    def __check_version(self, version):
+        if version is not None:
+            if version < 0 or version >= len(self.__version):
+                raise ValueError("Invalid 'version': {}".format(version))
 
 
