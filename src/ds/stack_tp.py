@@ -116,6 +116,22 @@ class StackTP:
         self.__version.append(node)
         # self.__add_leaf(leaf)
 
+    def print(self, version=None):
+        self.__check_version(version)
+        if version is None:
+            version = len(self.__version) - 1
+
+        res = "["
+        current = self.__version[version]
+        while current.val is not None:
+            res += str(current.val) + ", "
+            current = current.next
+
+        if res[-1] == " ":
+            res = res[:-2]
+        res += "]"
+        return res
+
     def __check_version(self, version):
         if version is not None:
             if version < 0 or version >= len(self.__version):

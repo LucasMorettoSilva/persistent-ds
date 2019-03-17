@@ -245,3 +245,48 @@ class TestStackTP(unittest.TestCase):
 
         for i in range(0, 20):
             self.assertEqual(i, s.size(i))
+
+    def test_print_withInvalidVersionNumber_shouldRaiseValueError(self):
+        s = StackTP()
+        for i in range(1, 20):
+            s.push(i)
+
+        for i in range(-20, 0):
+            with self.assertRaises(ValueError):
+                s.print(i)
+
+        for i in range(20, 40):
+            with self.assertRaises(ValueError):
+                s.print(i)
+
+    def test_print_withEmptyStack_shouldReturnEmptyStackRepresentation(self):
+        self.assertEqual("[]", StackTP().print())
+
+    def test_print_withCurrentVersion_shouldReturnCurrentStackRepresentation(self):
+        expected = "[]"
+        s = StackTP()
+        for i in range(1, 20):
+            if i == 1:
+                expected = expected.replace("[", "[{}".format(i))
+            else:
+                expected = expected.replace("[", "[{}, ".format(i))
+
+            s.push(i)
+            self.assertEqual(expected, s.print())
+
+    def test_print_withDifferentVersions_shouldReturnStackRepresentationAtGivenVersion(self):
+        expected = "[]"
+        version = list()
+        version.append(expected)
+
+        s = StackTP()
+        for i in range(1, 20):
+            if i == 1:
+                expected = expected.replace("[", "[{}".format(i))
+            else:
+                expected = expected.replace("[", "[{}, ".format(i))
+            version.append(expected)
+            s.push(i)
+
+        for i in range(20):
+            self.assertEqual(version[i], s.print(i))
