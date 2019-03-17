@@ -1,140 +1,75 @@
-from src.util.numbers import Numbers
+from src.abc.leaf         import Leaf
+from src.abc.version_tree import VersionTree
 
 
 class StackTP:
 
-    class __Leaf:
+    class __Node(Leaf):
 
-        def __init__(self, node=None, parent=None, depth=0):
-            self.node      = node
-            self.parent    = parent
-            self.depth     = depth
-            self.jump      = self
-            self.node.leaf = self
-
-    class __Node:
-
-        def __init__(self, val=None, next=None, size=0, leaf=None):
-            self.val  = val
-            self.next = next
+        def __init__(self, value=None, parent=None, size=0):
+            super().__init__(parent, value)
             self.size = size
-            self.leaf = leaf
 
     def __init__(self):
-        self.__version = list()
-        self.__root           = self.__Leaf(self.__Node())
-        self.__root.parent    = self.__root
-        self.__root.node.leaf = self.__root
-        self.__version.append(self.__root.node)
-
-    @staticmethod
-    def __level_ancestor(k, u):
-        y = u.depth - k
-        while u.depth != y:
-            if u.jump.depth >= y:
-                u = u.jump
-            else:
-                u = u.parent
-        return u
-
-    @staticmethod
-    def __lca(u, v):
-        if u.depth > v.depth:
-            u, v = v, u
-        v = StackTP.__level_ancestor(v.depth - u.depth, v)
-        if v is u:
-            return u
-        while u.parent is not v.parent:
-            if u.jump is not v.jump:
-                u = u.jump
-                v = v.jump
-            else:
-                u = u.parent
-                v = v.parent
-        return u.parent
-
-    def __add_leaf(self, u):
-        v = u.parent
-        if v.jump is not self.__root and \
-           v.depth - v.jump.depth == v.jump.depth - v.jump.jump.depth:
-            u.jump = v.jump.jump
-        else:
-            u.jump = v
+        self.__tree = VersionTree(self.__Node())
+        self.__acs  = [self.__tree.root]
 
     def kth(self, k, version=None):
-        self.__check_version(version)
+        version = self.__check_version(version)
 
-        if k <= 0:
+        if k <= 0 or k > self.__acs[version].size:
             raise IndexError("K is out of bounds for given version")
 
-        if version is None:
-            version = len(self.__version) - 1
-        if k > self.__version[version].size:
-            raise IndexError("K is out of bounds for given version")
-
-        return self.__level_ancestor(
-            self.__version[version].size - k,
-            self.__version[version].leaf
-        ).node.val
+        return self.__tree.la(
+            self.__acs[version].size - k,
+            self.__acs[version]
+        ).value
 
     def size(self, version=None):
-        self.__check_version(version)
-
-        if version is None:
-            return self.__version[-1].size
-        return self.__version[version].size
+        version = self.__check_version(version)
+        return self.__acs[version].size
 
     def top(self, version=None):
-        self.__check_version(version)
-
-        if version is None:
-            return self.__version[-1].val
-        return self.__version[version].val
+        version = self.__check_version(version)
+        return self.__acs[version].value
 
     def pop(self, version=None):
-        self.__check_version(version)
-
-        if version is None:
-            version = len(self.__version) - 1
-        if self.__version[version].val is None:
+        version = self.__check_version(version)
+        if self.__acs[version].value is None:
             return None
-        self.__version.append(self.__version[version].next)
-        return self.__version[version].val
+        self.__acs.append(self.__acs[version].parent)
+        return self.__acs[version].value
 
-    def push(self, val, version=None):
-        if val is None:
-            raise ValueError("Invalid argument 'val' of None Type")
-        self.__check_version(version)
+    def push(self, value, version=None):
+        if value is None:
+            raise ValueError("Invalid argument 'value' of None Type")
+        version = self.__check_version(version)
 
-        if version is None:
-            version = len(self.__version) - 1
-        next = self.__version[version]
-        node = self.__Node(val, next, next.size + 1)
-        leaf = self.__Leaf(node, next.leaf, next.leaf.depth + 1)
-        j = leaf.depth - (2 ** Numbers.non_zero(Numbers.skew_binary(leaf.depth))) + 1
-        leaf.jump = self.__version[j].leaf
-        self.__version.append(node)
-        # self.__add_leaf(leaf)
+        nxt  = self.__acs[version]
+        node = self.__Node(value, nxt, nxt.size + 1)
+        self.__tree.add_leaf(node)
+        self.__acs.append(node)
 
     def print(self, version=None):
-        self.__check_version(version)
-        if version is None:
-            version = len(self.__version) - 1
+        version = self.__check_version(version)
 
-        res = "["
-        current = self.__version[version]
-        while current.val is not None:
-            res += str(current.val) + ", "
-            current = current.next
-
-        if res[-1] == " ":
-            res = res[:-2]
-        res += "]"
+        res   = "[]"
+        first = True
+        curr  = self.__acs[version]
+        while curr.value is not None:
+            if first:
+                res = res.replace("]", "{}]".format(curr.value))
+                first = False
+            else:
+                res = res.replace("]", ", {}]".format(curr.value))
+            curr = curr.parent
         return res
 
     def __check_version(self, version):
         if version is not None:
-            if version < 0 or version >= len(self.__version):
+            if version < 0 or version >= len(self.__acs):
                 raise ValueError("Invalid 'version': {}".format(version))
 
-
+        if version is None:
+            return len(self.__acs) - 1
+        return version
