@@ -80,6 +80,9 @@ class TestStackTP(unittest.TestCase):
             with self.assertRaises(ValueError):
                 s.top(i)
 
+    def test_top_withEmptyStack_shouldReturnNone(self):
+        self.assertIsNone(StackTP().top())
+
     def test_top_withCurrentVersion_shouldReturnTopElementOfCurrentStackVersion(self):
         # Should behave as ephemeral stack
         s = StackTP()
@@ -126,6 +129,9 @@ class TestStackTP(unittest.TestCase):
         for i in range(20, 40):
             with self.assertRaises(ValueError):
                 s.pop(i)
+
+    def test_pop_withEmptyStack_shouldReturnNone(self):
+        self.assertIsNone(StackTP().pop())
 
     def test_pop_withCurrentVersion_shouldRemoveAndReturnTopStackElementOfCurrentVersion(self):
         # Should behave as ephemeral stack

@@ -34,5 +34,3 @@ class Numbers:
             return rest - weight, digits + [1]
         else:
             return rest, digits + [0]
-
-
