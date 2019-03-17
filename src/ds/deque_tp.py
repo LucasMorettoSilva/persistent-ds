@@ -1,131 +1,109 @@
+from src.abc.leaf         import Leaf
+from src.abc.version_tree import VersionTree
+
+
 class DequeTP:
 
-    class __Node:
+    class __AccessPoint:
 
-        def __init__(self, val=None, parent=None, depth=0):
-            self.val    = val
-            self.parent = parent
-            self.depth  = depth
-            self.jump   = self
+        def __init__(self, first, last, size):
+            self.first = first
+            self.last  = last
+            self.size  = size
 
+        @property
+        def access(self):
+            return self.first, self.last
+
+    class __Node(Leaf):
+
+        def __init__(self, value=None, parent=None):
+            super().__init__(parent, value)
 
     def __init__(self):
-        self.__version = list()
-        self.__root           = self.__Node()
-        self.__root.parent    = self.__root
-        self.__version.append(((
-            self.__root,
-            self.__root), 0
-        ))
-
-    @staticmethod
-    def __level_ancestor(k, u):
-        y = u.depth - k
-        while u.depth != y:
-            if u.jump.depth >= y:
-                u = u.jump
-            else:
-                u = u.parent
-        return u
-
-    @staticmethod
-    def __lca(u, v):
-        if u.depth > v.depth:
-            u, v = v, u
-        v = DequeTP.__level_ancestor(v.depth - u.depth, v)
-        if v is u:
-            return u
-        while u.parent is not v.parent:
-            if u.jump is not v.jump:
-                u = u.jump
-                v = v.jump
-            else:
-                u = u.parent
-                v = v.parent
-        return u.parent
-
-    def __add_leaf(self, u):
-        v = u.parent
-        if v.jump is not self.__root and \
-           v.depth - v.jump.depth == v.jump.depth - v.jump.jump.depth:
-            u.jump = v.jump.jump
-        else:
-            u.jump = v
+        self.__tree = VersionTree(self.__Node())
+        self.__acs = list()
+        self.__acs.append(
+            self.__AccessPoint(
+                self.__tree.root,
+                self.__tree.root,
+                0
+            )
+        )
 
     def __check_version(self, version):
         if version is not None:
-            if version < 0 or version >= len(self.__version):
+            if version < 0 or version >= len(self.__acs):
                 raise ValueError("Invalid 'version': {}".format(version))
 
         if version is None:
-            return len(self.__version) - 1
+            return len(self.__acs) - 1
         return version
 
     def front(self, version=None):
         version = self.__check_version(version)
-        return self.__version[version][0][0].val
+        return self.__acs[version].first.value
 
     def back(self, version=None):
         version = self.__check_version(version)
-        return self.__version[version][0][1].val
+        return self.__acs[version].last.value
 
-    def push_front(self, val, version=None):
-        if val is None:
-            raise ValueError("Invalid argument 'val' of None Type")
+    def push_front(self, value, version=None):
+        if value is None:
+            raise ValueError("Invalid argument 'value' of None Type")
         version = self.__check_version(version)
-        deque = self.__push_front(val, self.__version[version][0])
-        size  = self.__version[version][1] + 1
-        self.__version.append((deque, size))
+        deque = self.__push_front(value, self.__acs[version].access)
+        size  = self.__acs[version].size + 1
+        self.__acs.append(self.__AccessPoint(deque[0], deque[1], size))
 
-    def __push_front(self, val, deque):
-        if deque[0].val is None:
-            u = self.__Node(val, self.__root, 1)
-            self.__add_leaf(u)
+    def __push_front(self, value, deque):
+        if deque[0].value is None:
+            u = self.__Node(value, self.__tree.root)
+            self.__tree.add_leaf(u)
             return u, u
         else:
-            u = self.__Node(val, deque[0], deque[0].depth + 1)
-            self.__add_leaf(u)
+            u = self.__Node(value, deque[0])
+            self.__tree.add_leaf(u)
             return u, deque[1]
 
-    def push_back(self, val, version=None):
-        if val is None:
-            raise ValueError("Invalid argument 'val' of None Type")
+    def push_back(self, value, version=None):
+        if value is None:
+            raise ValueError("Invalid argument 'value' of None Type")
         version = self.__check_version(version)
-        deque   = self.__swap(self.__version[version][0])
-        size    = self.__version[version][1] + 1
-        self.__version.append((
-            self.__swap(self.__push_front(val, deque)),
-            size
-        ))
+        deque   = self.__swap(self.__acs[version].access)
+        size    = self.__acs[version].size + 1
+        deque   = self.__swap(self.__push_front(value, deque))
+        self.__acs.append(self.__AccessPoint(deque[0], deque[1], size))
 
     def pop_front(self, version=None):
         version = self.__check_version(version)
-        deque = self.__pop_front(self.__version[version][0])
-        size  = self.__version[version][1] - 1
+        deque = self.__pop_front(self.__acs[version].access)
+        size  = self.__acs[version].size - 1
         if size < 0:
             size = 0
-        self.__version.append((deque, size))
-        return self.__version[version][0][0].val
+        self.__acs.append(self.__AccessPoint(deque[0], deque[1], size))
+        return self.__acs[version].first.value
 
     def __pop_front(self, deque):
         first = deque[0]
         last  = deque[1]
         if first is last:
-            return self.__root, self.__root
-        elif self.__lca(first, last) is first:
-            la = self.__level_ancestor(last.depth - first.depth - 1, last)
+            return self.__tree.root, self.__tree.root
+        elif self.__tree.lca(first, last) is first:
+            la = self.__tree.la(last.depth - first.depth - 1, last)
             return la, last
         else:
             return first.parent, last
 
     def pop_back(self, version=None):
         version = self.__check_version(version)
-        deque = self.__swap(self.__version[version][0])
-        size = self.__version[version][1] - 1
+        deque = self.__swap(self.__acs[version].access)
+        size = self.__acs[version].size - 1
         if size < 0:
             size = 0
-        self.__version.append((self.__swap(self.__pop_front(deque)), size))
-        return deque[0].val
+        deque = self.__swap(self.__pop_front(deque))
+        self.__acs.append(self.__AccessPoint(deque[0], deque[1], size))
+        return self.__acs[version].last.value
 
     def kth(self, k, version=None):
         if k <= 0:
@@ -133,16 +111,16 @@ class DequeTP:
 
         version = self.__check_version(version)
 
-        if k > self.__version[version][1]:
+        if k > self.__acs[version].size:
             raise IndexError("K is out of bounds for given version")
 
-        deque = self.__version[version][0]
-        mid = self.__lca(deque[0], deque[1])
+        deque = self.__acs[version].access
+        mid = self.__tree.lca(deque[0], deque[1])
         l1  = deque[0].depth - mid.depth
         l2  = deque[1].depth - mid.depth
         if k - 1 <= l1:
-            return self.__level_ancestor(k - 1, deque[0]).val
-        return self.__level_ancestor(l1 + l2 + 1 - k, deque[1]).val
+            return self.__tree.la(k - 1, deque[0]).value
+        return self.__tree.la(l1 + l2 + 1 - k, deque[1]).value
 
     def print(self, version=None):
         version = self.__check_version(version)
@@ -160,7 +138,7 @@ class DequeTP:
 
     def size(self, version=None):
         version = self.__check_version(version)
-        return self.__version[version][1]
+        return self.__acs[version].size
 
     @staticmethod
     def __swap(a):
