@@ -1,7 +1,15 @@
+from abc import abstractmethod
+
+
 class VersionTree:
+
+    class :
 
     def __init__(self, root):
         self.__root = root
+
+    @abstractmethod
+    def create_leaf(self):
 
     @property
     def root(self):
