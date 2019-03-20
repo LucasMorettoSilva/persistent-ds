@@ -1,22 +1,55 @@
-from abc import abstractmethod
+from abc import ABC
+
+from collections.abc import Iterable
 
 
-class VersionTree:
+class VersionTree(ABC):
 
-    class :
+    class _AccessPoint:
 
-    def __init__(self, root):
-        self.__root = root
+        def __init__(self, pts, size):
+            if isinstance(pts, Iterable):
+                self.__pts = pts
+            else:
+                self.__pts = [pts]
+            self.__size = size
 
-    @abstractmethod
-    def create_leaf(self):
+        @property
+        def pointers(self):
+            return self.__pts
+
+        @property
+        def size(self):
+            return self.__size
+
+        def __getitem__(self, item):
+            return self.__pts[item]
+
+    class _Leaf:
+
+        def __init__(self, parent=None, value=None):
+            if parent is None:
+                self.parent = self
+                self.depth = 0
+            else:
+                self.parent = parent
+                self.depth = self.parent.depth + 1
+            self.value = value
+            self.jump = self
+
+    def __init__(self):
+        self._acs = list()
+
+    def size(self, version=None):
+        version = self._check_version(version)
+        return self._acs[version].size
 
     @property
     def root(self):
-        return self.__root
+        return self._acs[0][0]
 
     @staticmethod
-    def la(k, u):
+    def _la(k, u):
         y = u.depth - k
         while u.depth != y:
             if u.jump.depth >= y:
@@ -26,10 +59,10 @@ class VersionTree:
         return u
 
     @staticmethod
-    def lca(u, v):
+    def _lca(u, v):
         if u.depth > v.depth:
             u, v = v, u
-        v = VersionTree.la(v.depth - u.depth, v)
+        v = VersionTree._la(v.depth - u.depth, v)
         if v is u:
             return u
         while u.parent is not v.parent:
@@ -41,10 +74,19 @@ class VersionTree:
                 v = v.parent
         return u.parent
 
-    def add_leaf(self, u):
+    def _add_leaf(self, u):
         v = u.parent
-        if v.jump is not self.__root and \
+        if v.jump is not self.root and \
            v.depth - v.jump.depth == v.jump.depth - v.jump.jump.depth:
             u.jump = v.jump.jump
         else:
             u.jump = v
+
+    def _check_version(self, version):
+        if version is not None:
+            if version < 0 or version >= len(self._acs):
+                raise ValueError("Invalid 'version': {}".format(version))
+
+        if version is None:
+            return len(self._acs) - 1
+        return version
