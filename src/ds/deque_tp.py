@@ -6,26 +6,26 @@ class DequeTP(VersionTree):
     def __init__(self):
         super().__init__()
         root = self._Leaf()
-        self._acs.append(self._AccessPoint(
+        self._entry.append(self._Entry(
             [root, root], 0
         ))
 
     def front(self, version=None):
         version = self._check_version(version)
-        return self._acs[version][0].value
+        return self._entry[version][0].value
 
     def back(self, version=None):
         version = self._check_version(version)
-        return self._acs[version][1].value
+        return self._entry[version][1].value
 
     def push_front(self, value, version=None):
         if value is None:
             raise ValueError("Invalid argument 'value' of None Type")
         version = self._check_version(version)
 
-        deque = self.__push_front(value, self._acs[version].pointers)
-        size  = self._acs[version].size + 1
-        self._acs.append(self._AccessPoint(deque, size))
+        deque = self.__push_front(value, self._entry[version].pointers)
+        size  = self._entry[version].size + 1
+        self._entry.append(self._Entry(deque, size))
 
     def __push_front(self, value, deque):
         u = self._Leaf(deque[0], value)
@@ -40,21 +40,21 @@ class DequeTP(VersionTree):
             raise ValueError("Invalid argument 'value' of None Type")
         version = self._check_version(version)
 
-        deque = self.__swap(self._acs[version].pointers)
+        deque = self.__swap(self._entry[version].pointers)
         deque = self.__swap(self.__push_front(value, deque))
-        size  = self._acs[version].size + 1
+        size  = self._entry[version].size + 1
 
-        self._acs.append(self._AccessPoint(deque, size))
+        self._entry.append(self._Entry(deque, size))
 
     def pop_front(self, version=None):
         version = self._check_version(version)
 
-        deque = self.__pop_front(self._acs[version].pointers)
-        size  = self._acs[version].size - 1
+        deque = self.__pop_front(self._entry[version].pointers)
+        size  = self._entry[version].size - 1
         if size < 0:
             size = 0
-        self._acs.append(self._AccessPoint(deque, size))
-        return self._acs[version][0].value
+        self._entry.append(self._Entry(deque, size))
+        return self._entry[version][0].value
 
     def __pop_front(self, deque):
         first = deque[0]
@@ -70,22 +70,22 @@ class DequeTP(VersionTree):
     def pop_back(self, version=None):
         version = self._check_version(version)
 
-        deque = self.__swap(self._acs[version].pointers)
+        deque = self.__swap(self._entry[version].pointers)
         deque = self.__swap(self.__pop_front(deque))
-        size  = self._acs[version].size - 1
+        size  = self._entry[version].size - 1
         if size < 0:
             size = 0
 
-        self._acs.append(self._AccessPoint(deque, size))
-        return self._acs[version][1].value
+        self._entry.append(self._Entry(deque, size))
+        return self._entry[version][1].value
 
     def kth(self, k, version=None):
         version = self._check_version(version)
 
-        if k <= 0 or k > self._acs[version].size:
+        if k <= 0 or k > self._entry[version].size:
             raise IndexError("K is out of bounds for given version")
 
-        deque = self._acs[version].pointers
+        deque = self._entry[version].pointers
 
         mid   = self._lca(deque[0], deque[1])
         l1    = deque[0].depth - mid.depth

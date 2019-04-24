@@ -5,7 +5,7 @@ from collections.abc import Iterable
 
 class VersionTree(ABC):
 
-    class _AccessPoint:
+    class _Entry:
 
         def __init__(self, pts, size):
             if isinstance(pts, Iterable):
@@ -38,15 +38,15 @@ class VersionTree(ABC):
             self.jump = self
 
     def __init__(self):
-        self._acs = list()
+        self._entry = list()
 
     def size(self, version=None):
         version = self._check_version(version)
-        return self._acs[version].size
+        return self._entry[version].size
 
     @property
     def root(self):
-        return self._acs[0][0]
+        return self._entry[0][0]
 
     @staticmethod
     def _la(k, u):
@@ -84,9 +84,9 @@ class VersionTree(ABC):
 
     def _check_version(self, version):
         if version is not None:
-            if version < 0 or version >= len(self._acs):
+            if version < 0 or version >= len(self._entry):
                 raise ValueError("Invalid 'version': {}".format(version))
 
         if version is None:
-            return len(self._acs) - 1
+            return len(self._entry) - 1
         return version
