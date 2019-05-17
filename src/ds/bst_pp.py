@@ -93,7 +93,9 @@ class BSTPP:
             u = self.__child(u, key > u.key, version)
         return u
 
-    def insert(self, key):
+    def put(self, key):
+        if key is None:
+            raise ValueError("Argument 'key' is of None Type")
         self.__curr += 1
         self.__entry.append(self.__entry[-1])
         x = self.__Node(key)
@@ -213,6 +215,10 @@ class BSTPP:
             x.red = u.red
 
     def delete(self, key):
+        if key is None:
+            raise ValueError("Argument 'key' is of None Type")
+        if not self.contains(key):
+            return
         self.__curr += 1
         self.__entry.append(self.__entry[-1])
         u = self.__find(key, self.__curr)
