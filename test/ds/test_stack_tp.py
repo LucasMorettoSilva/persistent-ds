@@ -296,3 +296,22 @@ class TestStackTP(unittest.TestCase):
 
         for i in range(20):
             self.assertEqual(version[i], s.print(i))
+
+    def test_ds_withRandomCommands_shouldExecuteCorrectOperations(self):
+        s = StackTP()
+        s.push(1, 0)
+        s.push(2, 1)
+        s.push(3, 2)
+        s.push(4, 1)
+        self.assertEqual(2, s.top(2))
+        s.pop(2)
+        self.assertEqual(1, s.top(5))
+        s.push(5, 2)
+        self.assertEqual(4, s.top(4))
+        s.push(6, 4)
+        self.assertEqual(3, s.size(6))
+        s.push(7, 3)
+        s.pop(3)
+        self.assertEqual(6, s.top(7))
+        self.assertEqual("[7, 3, 2, 1]", s.print(8))
+        self.assertEqual("[2, 1]", s.print(9))
