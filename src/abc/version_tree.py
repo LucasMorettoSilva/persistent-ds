@@ -7,12 +7,13 @@ class VersionTree(ABC):
 
     class _Entry:
 
-        def __init__(self, pts, size):
+        def __init__(self, pts, size, last=None):
             if isinstance(pts, Iterable):
                 self.__pts = pts
             else:
                 self.__pts = [pts]
             self.__size = size
+            self.last = last
 
         @property
         def pointers(self):

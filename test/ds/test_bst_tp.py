@@ -212,3 +212,17 @@ class TestBSTTP(unittest.TestCase):
 
         for i in range(len(expected)):
             self.assertEqual(expected[i], str(bst.keys_in_order(i)))
+
+    def test_new(self):
+        bst = BSTTP()
+        bst.put(2, 2)
+        bst.put(1, 1)
+        bst.put(6, 6)
+        bst.put(3, 3)
+        bst.put(7, 7)
+        bst.put(5, 5)
+        bst.put(4, 4)
+        print(bst.keys_in_order())
+        bst.delete(6)
+        print(bst.keys_in_order())
+        print(bst.keys_in_order(7))

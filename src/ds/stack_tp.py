@@ -58,3 +58,13 @@ class StackTP(VersionTree):
                 res = res.replace("]", ", {}]".format(curr.value))
             curr = curr.parent
         return res
+
+    def values(self, version=None):
+        version = self._check_version(version)
+
+        res = list()
+        cur = self._entry[version][0]
+        while cur.value is not None:
+            res.append(cur.value)
+            cur = cur.parent
+        return res
