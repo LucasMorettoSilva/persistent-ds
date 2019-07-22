@@ -27,25 +27,25 @@ class QueueTP(VersionTree):
             raise ValueError("Invalid argument 'value' of None Type")
         version = self._check_version(version)
 
-        deque = self.__swap(self._entry[version].pointers)
-        deque = self.__swap(self.__enqueue(value, deque))
+        first_last = self.__swap(self._entry[version].pointers)
+        first_last = self.__swap(self.__enqueue(value, first_last))
         size  = self._entry[version].size + 1
 
-        self._entry.append(self._Entry(deque, size))
+        self._entry.append(self._Entry(first_last, size))
 
     def dequeue(self, version=None):
         version = self._check_version(version)
 
-        deque = self.__dequeue(self._entry[version].pointers)
+        first_last = self.__dequeue(self._entry[version].pointers)
         size  = self._entry[version].size - 1
         if size < 0:
             size = 0
-        self._entry.append(self._Entry(deque, size))
+        self._entry.append(self._Entry(first_last, size))
         return self._entry[version][0].value
 
-    def __dequeue(self, deque):
-        first = deque[0]
-        last  = deque[1]
+    def __dequeue(self, first_last):
+        first = first_last[0]
+        last  = first_last[1]
         if first is last:
             return self.root, self.root
         elif self._lca(first, last) is first:
@@ -60,15 +60,15 @@ class QueueTP(VersionTree):
         if k <= 0 or k > self._entry[version].size:
             raise IndexError("K is out of bounds for given version")
 
-        deque = self._entry[version].pointers
+        first_value = self._entry[version].pointers
 
-        mid   = self._lca(deque[0], deque[1])
-        l1    = deque[0].depth - mid.depth
-        l2    = deque[1].depth - mid.depth
+        mid   = self._lca(first_value[0], first_value[1])
+        l1    = first_value[0].depth - mid.depth
+        l2    = first_value[1].depth - mid.depth
 
         if k - 1 <= l1:
-            return self._la(k - 1, deque[0]).value
-        return self._la(l1 + l2 + 1 - k, deque[1]).value
+            return self._la(k - 1, first_value[0]).value
+        return self._la(l1 + l2 + 1 - k, first_value[1]).value
 
     def print(self, version=None):
         version = self._check_version(version)
